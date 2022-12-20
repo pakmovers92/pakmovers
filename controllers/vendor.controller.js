@@ -19,6 +19,10 @@ module.exports = {
       joiHelper(validateLogin, req.body)
       const vendor = await Vendor.findOne({ email })
       if (!vendor) throw Error('Signup First')
+      if (!vendor.isRegistered)
+        throw Error('You Account is under registration process')
+      if (vendor.isBlocked)
+        throw Error('You Account has been blocked.')
       if (!(await bcrypt.compare(password, vendor.password)))
         throw Error('Incorrect Password')
       res.status(200).json({
@@ -33,6 +37,7 @@ module.exports = {
           vehicales: vendor.vehicales,
           priceKG: vendor.price_per_kg,
           priceKM: vendor.price_per_km,
+          discription: vendor.discription,
           mode: 'vendor',
         },
         token: jwtSign({ id: vendor.id, isVendor: true }),
